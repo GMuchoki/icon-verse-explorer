@@ -1,6 +1,5 @@
-
 import { useState, useMemo } from "react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
 import { Sidebar } from "@/components/Sidebar";
@@ -15,7 +14,6 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [previewIcon, setPreviewIcon] = useState<Icon | null>(null);
   
-  // Filter icons based on category and search query
   const filteredIcons = useMemo(() => {
     return iconData.filter((icon) => {
       const matchesCategory = selectedCategory === "All" || icon.category.includes(selectedCategory);
