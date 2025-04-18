@@ -15,6 +15,24 @@ export function IconPreview({ icon, isOpen, onClose }: IconPreviewProps) {
   if (!icon) return null;
 
   const handleDownloadSVG = () => {
+    // Create SVG content
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${icon.svgPath}" /></svg>`;
+    
+    // Create blob and download link
+    const blob = new Blob([svgContent], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    
+    // Create download element
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${icon.name.toLowerCase().replace(/\s+/g, "-")}.svg`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
     toast({
       title: "Icon Downloaded",
       description: `${icon.name} has been downloaded as SVG.`,
@@ -24,6 +42,52 @@ export function IconPreview({ icon, isOpen, onClose }: IconPreviewProps) {
   };
   
   const handleDownloadPNG = () => {
+    // Create a canvas to render the SVG
+    const canvas = document.createElement("canvas");
+    canvas.width = 200;
+    canvas.height = 200;
+    const ctx = canvas.getContext("2d");
+    
+    if (ctx) {
+      // Draw background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Create temporary SVG image
+      const img = new Image();
+      const svgBlob = new Blob(
+        [`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${icon.svgPath}" /></svg>`], 
+        { type: "image/svg+xml" }
+      );
+      const url = URL.createObjectURL(svgBlob);
+      
+      img.onload = () => {
+        // Draw the image on the canvas
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Convert canvas to PNG
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const pngUrl = URL.createObjectURL(blob);
+            
+            // Download the PNG
+            const a = document.createElement("a");
+            a.href = pngUrl;
+            a.download = `${icon.name.toLowerCase().replace(/\s+/g, "-")}.png`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // Cleanup
+            document.body.removeChild(a);
+            URL.revokeObjectURL(pngUrl);
+            URL.revokeObjectURL(url);
+          }
+        }, "image/png");
+      };
+      
+      img.src = url;
+    }
+    
     toast({
       title: "Icon Downloaded",
       description: `${icon.name} has been downloaded as PNG.`,
